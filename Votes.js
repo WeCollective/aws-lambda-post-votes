@@ -4,7 +4,7 @@ var db = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = function(event, context, callback) {
   console.log(JSON.stringify(event, null, 2));
-  var promises = [];
+  var promises = [];  // db operations wrapped in promises and pushed to this array
   event.Records.forEach(function(record) {
     console.log('DynamoDB Record: %j', record.dynamodb);
 
@@ -33,7 +33,7 @@ exports.handler = function(event, context, callback) {
         }, function(err, data) {
           if(err) {
             console.log(err);
-            return reject(err); // TODO: should we error out?
+            return reject(err);
           }
           resolve();
         });
@@ -43,7 +43,6 @@ exports.handler = function(event, context, callback) {
     // Update local stats if the individual stat has been updated
     if(record.dynamodb.OldImage.individual.N != record.dynamodb.NewImage.individual.N) {
       var inc = Number(record.dynamodb.NewImage.individual.N) - Number(record.dynamodb.OldImage.individual.N);
-      console.log("INCREMENTING: " + inc);
       var tagTable = 'Tags';
       if(dbTable.indexOf('dev') > -1) {
         tagTable = 'dev' + tagTable;
@@ -57,15 +56,13 @@ exports.handler = function(event, context, callback) {
             ":id": record.dynamodb.Keys.branchid.S
           }
         }, function(err, data) {
-          console.log("LOCAL CALLBACK HERE!");
           if(err) return reject(err);
           if(!data || !data.Items) {
             return reject('Error fetching branch tags');
           }
 
-          console.log("UPDATING %j", data.Items);
           // update the post's local stat on each tagged branch
-          var updates = [];
+          var updates = []; // wrap each update in promise and push to this array
           data.Items.forEach(function(item) {
             updates.push(new Promise(function(resolve, reject) {
               db.update({
@@ -82,25 +79,24 @@ exports.handler = function(event, context, callback) {
                 }
               }, function(err, data) {
                 if(err) {
-                  console.log("ERROR LOCAL %j", err);
-                  return reject(err); // TODO: should we error out?
+                  return reject(err);
                 }
-                console.log("SUCCESS LOCAL");
                 resolve();
               });
             }));
           });
+          // resolve all tagged branch updates before resolving promise for this branch
           Promise.all(updates).then(resolve, reject);
         });
       }));
     }
   });
+
+  // resolve all updates
   Promise.all(promises).then(function() {
-    console.log("WOOHOO UPDATED!");
     callback(null, "Successfully updated stats!");
   }, function(err) {
-    console.log("ERROR UPDATING");
-    console.log(err);
-    callback("Error updating stats!");
+    console.log("Error updating stats: %j", err);
+    callback("Error!");
   });
 };
