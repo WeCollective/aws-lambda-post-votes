@@ -62,7 +62,7 @@ exports.handler = function(event, context, callback) {
               branchid: item.tag
             },
             AttributeUpdates: {
-              individual: {
+              local: {
                 Action: 'ADD',
                 Value: inc
               }
