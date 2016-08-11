@@ -94,8 +94,9 @@ exports.handler = function(event, context, callback) {
   Promise.all(promises).then(function() {
     console.log("WOOHOO UPDATED!");
     callback(null, "Successfully updated stats!");
-  }, function() {
+  }, function(err) {
     console.log("ERROR UPDATING");
+    console.log(err);
     callback("Error updating stats!");
   });
 };
