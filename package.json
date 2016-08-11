@@ -1,0 +1,24 @@
+{
+  "name": "votes-lambda",
+  "version": "1.0.0",
+  "description": "",
+  "main": "Votes.js",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-jshint": "^1.0.0",
+    "grunt-exec": "^1.0.0",
+    "grunt-zip": "^0.17.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://MSChristensen@bitbucket.org/wecollective/wecolambdavotes.git"
+  },
+  "author": "Mike Christensen",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/wecollective/wecolambdavotes#readme"
+}
