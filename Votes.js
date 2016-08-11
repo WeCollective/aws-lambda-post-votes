@@ -40,6 +40,7 @@ exports.handler = function(event, context, callback) {
     // Update local stats if the individual stat has been updated
     if(record.dynamodb.OldImage.individual.N != record.dynamodb.NewImage.individual.N) {
       var inc = Number(record.dynamodb.NewImage.individual.N) - Number(record.dynamodb.OldImage.individual.N);
+      console.log("INCREMENTING: " + inc);
       // get the tags of this branch, which indicate all the branches above it in the tree
       db.query({
         TableName: dbTable,
@@ -53,6 +54,7 @@ exports.handler = function(event, context, callback) {
           return callback('Error fetching branch tags');
         }
 
+        console.log("UPDATING %j", data.Items);
         // update the post's local stat on each tagged branch
         data.Items.forEach(function(item) {
           db.update({
@@ -69,7 +71,7 @@ exports.handler = function(event, context, callback) {
             }
           }, function(err, data) {
             if(err) {
-              console.log(err);
+              console.log("ERROR LOCAL %j", err);
               return callback(err); // TODO: should we error out?
             }
             console.log("SUCCESS LOCAL");
