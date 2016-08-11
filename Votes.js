@@ -23,7 +23,7 @@ exports.handler = function(event, context, callback) {
       // fetch the dbTable from the event ARN of the form:
       // arn:aws:dynamodb:us-east-1:111111111111:table/test/stream/2020-10-10T08:18:22.385
       // see: http://stackoverflow.com/questions/35278881/how-to-get-the-table-name-in-aws-dynamodb-trigger-function
-      var dbTable = event.eventSourceARN.split(':')[5].split('/')[1];
+      var dbTable = record.eventSourceARN.split(':')[5].split('/')[1];
       console.log("TABLE NAME: " + dbTable);
       // update the post's individual stat on this branch
       db.update({
