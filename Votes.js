@@ -10,11 +10,11 @@ exports.handler = function(event, context, callback) {
     // Check which parameter has been changed (up/down)
     var up = 0;
     var down = 0;
-    if(record.dynamodb.OldImage.up < record.dynamodb.NewImage.up) {
-      up = record.dynamodb.NewImage.up - record.dynamodb.OldImage.up;
+    if(Number(record.dynamodb.OldImage.up.N) < Number(record.dynamodb.NewImage.up.N)) {
+      up = Number(record.dynamodb.NewImage.up.N) - Number(record.dynamodb.OldImage.up.N);
     }
-    if(record.dynamodb.OldImage.down < record.dynamodb.NewImage.down) {
-      down = record.dynamodb.NewImage.down - record.dynamodb.OldImage.down;
+    if(Number(record.dynamodb.OldImage.down.N) < Number(record.dynamodb.NewImage.down.N)) {
+      down = Number(record.dynamodb.NewImage.down.N) - Number(record.dynamodb.OldImage.down.N);
     }
 
     console.log("VOTES: " + up + ", " + down);
@@ -29,13 +29,13 @@ exports.handler = function(event, context, callback) {
       db.update({
         TableName: dbTable,
         Key: {
-          id: record.dynamodb.Keys.id,
-          branchid: record.dynamodb.Keys.branchid
+          id: record.dynamodb.Keys.id.S,
+          branchid: record.dynamodb.Keys.branchid.S
         },
         AttributeUpdates: {
           individual: {
             Action: 'PUT',
-            Value: record.dynamodb.OldImage.individual + up - down
+            Value: Number(record.dynamodb.OldImage.individual.N) + up - down
           }
         }
       }, function(err, data) {
