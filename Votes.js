@@ -44,10 +44,14 @@ exports.handler = function(event, context, callback) {
     if(record.dynamodb.OldImage.individual.N != record.dynamodb.NewImage.individual.N) {
       var inc = Number(record.dynamodb.NewImage.individual.N) - Number(record.dynamodb.OldImage.individual.N);
       console.log("INCREMENTING: " + inc);
+      var tagTable = 'Tags';
+      if(dbTable.indexOf('dev') > -1) {
+        tagTable = 'dev' + tagTable;
+      }
       promises.push(new Promise(function(resolve, reject) {
         // get the tags of this branch, which indicate all the branches above it in the tree
         db.query({
-          TableName: dbTable,
+          TableName: tagTable,
           KeyConditionExpression: "branchid = :id",
           ExpressionAttributeValues: {
             ":id": record.dynamodb.Keys.branchid.S
