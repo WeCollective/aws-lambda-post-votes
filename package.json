@@ -1,8 +1,8 @@
 {
-  "name": "votes-lambda",
+  "name": "post-votes-lambda",
   "version": "1.0.0",
   "description": "",
-  "main": "Votes.js",
+  "main": "PostVotes.js",
   "dependencies": {
   },
   "devDependencies": {
