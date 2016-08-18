@@ -8,7 +8,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     // javascript linting
     jshint: {
-      files: ['Gruntfile.js', 'Votes.js'],
+      files: ['Gruntfile.js', 'PostVotes.js'],
       options: {
         node: true // tell jshint we are using nodejs to avoid incorrect errors
       }
@@ -35,20 +35,20 @@ module.exports = function(grunt) {
           var functionName;
           if(environment == 'development') {
             checkout = 'master';
-            functionName = 'devVotes';
+            functionName = 'devPostVotes';
           } else if(environment == 'production') {
             checkout = 'production';
-            functionName = 'Votes';
+            functionName = 'PostVotes';
           } else {
             return '';
           }
-          var deployCommand = 'aws lambda update-function-code --function-name ' + functionName + ' --zip-file fileb://Votes.zip --region eu-west-1 --profile weco';
+          var deployCommand = 'aws lambda update-function-code --function-name ' + functionName + ' --zip-file fileb://PostVotes.zip --region eu-west-1 --profile weco';
           return 'echo Checking out ' + checkout + ' && git checkout ' + checkout + ' && echo Deploying... && ' + deployCommand + ' && git checkout master';
         }
       }
     },
     zip: {
-      'Votes.zip': ['Votes.js', 'node_modules/**/*']
+      'PostVotes.zip': ['PostVotes.js', 'node_modules/**/*']
     }
   });
 
