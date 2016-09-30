@@ -18,7 +18,6 @@ exports.handler = function(event, context, callback) {
     // Update individual stat if an up/down vote has been cast
     if(record.dynamodb.OldImage.up && record.dynamodb.NewImage.up &&
        record.dynamodb.OldImage.down && record.dynamodb.NewImage.down) {
-      console.log("UP AND DOWN EXIST");
       if(record.dynamodb.OldImage.up.N != record.dynamodb.NewImage.up.N ||
          record.dynamodb.OldImage.down.N != record.dynamodb.NewImage.down.N) {
         // update the post's individual stat on this branch
@@ -69,7 +68,6 @@ exports.handler = function(event, context, callback) {
 
     // Update local stats if the individual stat has been updated
     if(record.dynamodb.OldImage.individual && record.dynamodb.NewImage.individual) {
-      console.log("INDIVIDUAL EXISTS");
       if(record.dynamodb.OldImage.individual.N != record.dynamodb.NewImage.individual.N) {
         var inc = Number(record.dynamodb.NewImage.individual.N) - Number(record.dynamodb.OldImage.individual.N);
         var tagTable = 'Tags';
@@ -144,7 +142,6 @@ exports.handler = function(event, context, callback) {
 
     // if local stat is updated on the root branch...
     if(record.dynamodb.OldImage.local && record.dynamodb.NewImage.local) {
-      console.log("LOCAL EXISTS");
       if(record.dynamodb.OldImage.local.N != record.dynamodb.NewImage.local.N &&
          record.dynamodb.Keys.branchid.S === 'root') {
 
