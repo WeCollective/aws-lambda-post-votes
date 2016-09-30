@@ -66,7 +66,8 @@ exports.handler = function(event, context, callback) {
     }
 
     // Update local stats if the individual stat has been updated
-    if(record.dynamodb.OldImage.individual.N != record.dynamodb.NewImage.individual.N) {
+    if(record.dynamodb.OldImage.individual && record.dynamodb.NewImage.individual &&
+       record.dynamodb.OldImage.individual.N != record.dynamodb.NewImage.individual.N) {
       var inc = Number(record.dynamodb.NewImage.individual.N) - Number(record.dynamodb.OldImage.individual.N);
       var tagTable = 'Tags';
       if(dbTable.indexOf('dev') > -1) {
@@ -90,23 +91,43 @@ exports.handler = function(event, context, callback) {
           var updates = []; // wrap each update in promise and push to this array
           data.Items.forEach(function(item) {
             updates.push(new Promise(function(resolve, reject) {
-              db.update({
-                TableName: dbTable,
+              // ensure item exists first by performing a fetch
+              db.get({
+                TableName : dbTable,
                 Key: {
                   id: record.dynamodb.Keys.id.S,
                   branchid: item.tag
-                },
-                AttributeUpdates: {
-                  local: {
-                    Action: 'ADD',
-                    Value: inc
-                  }
                 }
               }, function(err, data) {
                 if(err) {
+                  console.error("Error fetching item:", err);
                   return reject(err);
                 }
-                resolve();
+                if(!data || !data.Item) {
+                  console.error("Item no longer exist: %j", {
+                    id: record.dynamodb.Keys.id.S,
+                    branchid: item.tag
+                  });
+                  return resolve();
+                }
+                db.update({
+                  TableName: dbTable,
+                  Key: {
+                    id: record.dynamodb.Keys.id.S,
+                    branchid: item.tag
+                  },
+                  AttributeUpdates: {
+                    local: {
+                      Action: 'ADD',
+                      Value: inc
+                    }
+                  }
+                }, function(err, data) {
+                  if(err) {
+                    return reject(err);
+                  }
+                  resolve();
+                });
               });
             }));
           });
