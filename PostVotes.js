@@ -39,7 +39,7 @@ exports.handler = function(event, context, callback) {
               id: record.dynamodb.Keys.id.S,
               branchid: record.dynamodb.Keys.branchid.S
             });
-            return reject();
+            return resolve();
           }
           // item exists, perform the update
           db.update({
