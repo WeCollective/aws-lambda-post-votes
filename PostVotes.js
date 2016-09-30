@@ -6,9 +6,9 @@ exports.handler = function(event, context, callback) {
   console.log(JSON.stringify(event, null, 2));
   var promises = [];  // db operations wrapped in promises and pushed to this array
   event.Records.forEach(function(record) {
-    console.log('DynamoDB Record: %j', record.dynamodb);
+    if(record.eventName !== 'MODIFY') { return; }
 
-    if(record.eventName != 'MODIFY') { return; }
+    console.log('DynamoDB Record: %j', record.dynamodb);
 
     // fetch the dbTable from the event ARN of the form:
     // arn:aws:dynamodb:us-east-1:111111111111:table/test/stream/2020-10-10T08:18:22.385
@@ -16,28 +16,50 @@ exports.handler = function(event, context, callback) {
     var dbTable = record.eventSourceARN.split(':')[5].split('/')[1];
 
     // Update individual stat if an up/down vote has been cast
-    if(record.dynamodb.OldImage.up.N != record.dynamodb.NewImage.up.N ||
+    if(record.dynamodb.OldImage.up && record.dynamodb.NewImage.up &&
+       record.dynamodb.OldImage.down && record.dynamodb.NewImage.down &&
+       record.dynamodb.OldImage.up.N != record.dynamodb.NewImage.up.N ||
        record.dynamodb.OldImage.down.N != record.dynamodb.NewImage.down.N) {
       // update the post's individual stat on this branch
       promises.push(new Promise(function(resolve, reject) {
-        db.update({
-          TableName: dbTable,
+        // first ensure post still exists
+        db.get({
+          TableName : dbTable,
           Key: {
             id: record.dynamodb.Keys.id.S,
             branchid: record.dynamodb.Keys.branchid.S
-          },
-          AttributeUpdates: {
-            individual: {
-              Action: 'PUT',
-              Value: Number(record.dynamodb.NewImage.up.N) - Number(record.dynamodb.NewImage.down.N)
-            }
           }
         }, function(err, data) {
           if(err) {
-            console.log(err);
+            console.error("Error fetching item:", err);
             return reject(err);
           }
-          resolve();
+          if(!data || !data.Item) {
+            console.error("Item no longer exist: %j", {
+              id: record.dynamodb.Keys.id.S,
+              branchid: record.dynamodb.Keys.branchid.S
+            });
+          }
+          // item exists, perform the update
+          db.update({
+            TableName: dbTable,
+            Key: {
+              id: record.dynamodb.Keys.id.S,
+              branchid: record.dynamodb.Keys.branchid.S
+            },
+            AttributeUpdates: {
+              individual: {
+                Action: 'PUT',
+                Value: Number(record.dynamodb.NewImage.up.N) - Number(record.dynamodb.NewImage.down.N)
+              }
+            }
+          }, function(err, data) {
+            if(err) {
+              console.log("Error updating item", err);
+              return reject(err);
+            }
+            resolve();
+          });
         });
       }));
     }
