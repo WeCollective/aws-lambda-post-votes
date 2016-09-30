@@ -124,6 +124,7 @@ exports.handler = function(event, context, callback) {
                   }
                 }, function(err, data) {
                   if(err) {
+                    console.error("Error updating item: ", err);
                     return reject(err);
                   }
                   resolve();
@@ -132,6 +133,78 @@ exports.handler = function(event, context, callback) {
             }));
           });
           // resolve all tagged branch updates before resolving promise for this branch
+          Promise.all(updates).then(resolve, reject);
+        });
+      }));
+    }
+
+    // if local stat is updated on the root branch...
+    if(record.dynamodb.OldImage.local && record.dynamodb.NewImage.local &&
+       record.dynamodb.OldImage.local.N != record.dynamodb.NewImage.local.N &&
+       record.dynamodb.Keys.branchid.S === 'root') {
+
+      // update the post's global stat on all branches:
+      // first fetch post on all branches
+      promises.push(new Promise(function(resolve, reject) {
+        db.query({
+          TableName: dbTable,
+          KeyConditionExpression: "id = :id",
+          ExpressionAttributeValues: {
+            ":id": record.dynamodb.Keys.id.S
+          }
+        }, function(err, data) {
+          if(err) return reject(err);
+          if(!data || !data.Items) {
+            return reject();
+          }
+
+          // set the post global stat on all items to the local stat on the root branch
+          var updates = [];
+          data.Items.forEach(function(item) {
+            updates.push(new Promise(function(resolve, reject) {
+              // ensure item exists first by performing a fetch
+              db.get({
+                TableName : dbTable,
+                Key: {
+                  id: item.id,
+                  branchid: item.branchid
+                }
+              }, function(err, data) {
+                if(err) {
+                  console.error("Error fetching item:", err);
+                  return reject(err);
+                }
+                if(!data || !data.Item) {
+                  console.error("Item no longer exist: %j", {
+                    id: item.id,
+                    branchid: item.branchid
+                  });
+                  return resolve();
+                }
+                // update the item
+                db.update({
+                  TableName: dbTable,
+                  Key: {
+                    id: item.id,
+                    branchid: item.branchid
+                  },
+                  AttributeUpdates: {
+                    global: {
+                      Action: 'PUT',
+                      Value: record.dynamodb.NewImage.local.N
+                    }
+                  }
+                }, function(err, data) {
+                  if(err) {
+                    console.error("Error updating item: ", err);
+                    return reject(err);
+                  }
+                  resolve();
+                });
+              });
+            }));
+          });
+          // resolve all branch updates before resolving promise
           Promise.all(updates).then(resolve, reject);
         });
       }));
