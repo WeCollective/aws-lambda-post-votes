@@ -35,7 +35,7 @@ exports.handler = function(event, context, callback) {
             return reject(err);
           }
           if(!data || !data.Item) {
-            console.error("Item no longer exist: %j", {
+            console.error("Item no longer exists: %j", {
               id: record.dynamodb.Keys.id.S,
               branchid: record.dynamodb.Keys.branchid.S
             });
@@ -104,7 +104,7 @@ exports.handler = function(event, context, callback) {
                   return reject(err);
                 }
                 if(!data || !data.Item) {
-                  console.error("Item no longer exist: %j", {
+                  console.error("Item no longer exists: %j", {
                     id: record.dynamodb.Keys.id.S,
                     branchid: item.tag
                   });
@@ -158,7 +158,7 @@ exports.handler = function(event, context, callback) {
             return reject();
           }
 
-          // set the post global stat on all items to the local stat on the root branch
+          // set the post global stat on all post items to the local stat on the root branch
           var updates = [];
           data.Items.forEach(function(item) {
             updates.push(new Promise(function(resolve, reject) {
@@ -175,7 +175,7 @@ exports.handler = function(event, context, callback) {
                   return reject(err);
                 }
                 if(!data || !data.Item) {
-                  console.error("Item no longer exist: %j", {
+                  console.error("Item no longer exists: %j", {
                     id: item.id,
                     branchid: item.branchid
                   });
@@ -191,7 +191,7 @@ exports.handler = function(event, context, callback) {
                   AttributeUpdates: {
                     global: {
                       Action: 'PUT',
-                      Value: record.dynamodb.NewImage.local.N
+                      Value: Number(record.dynamodb.NewImage.local.N)
                     }
                   }
                 }, function(err, data) {
