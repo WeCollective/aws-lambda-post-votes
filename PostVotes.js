@@ -219,6 +219,6 @@ exports.handler = function(event, context, callback) {
     callback(null, "Successfully updated stats!");
   }, function(err) {
     console.log("Error updating stats: %j", err);
-    callback("Error!");
+    callback(null, "Error updating stats: " + JSON.stringify(err));  // dont indicate err to lambda so it continues anyway!
   });
 };
