@@ -13,6 +13,7 @@ module.exports = grunt => {
         'PostVotes.js',
       ],
       options: {
+        esversion: 6,
         node: true, // tell jshint we are using nodejs to avoid incorrect errors
       },
     },
