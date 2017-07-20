@@ -24,7 +24,7 @@ module.exports = grunt => {
         cmd(env) {
           let checkout;
 
-          if (env === 'development') {
+          if (env === 'dev') {
             checkout = 'master';
           }
           else if (env === 'production') {
@@ -42,7 +42,7 @@ module.exports = grunt => {
           let checkout;
           let functionName;
 
-          if (env === 'development') {
+          if (env === 'dev') {
             checkout = 'master';
             functionName = 'devPostVotes';
           }
@@ -70,8 +70,8 @@ module.exports = grunt => {
   /* Register main tasks.
   **    grunt build           lints the js
   */
-  grunt.registerTask('build:development', ['exec:checkout:development', 'jshint', 'zip']);
+  grunt.registerTask('build:dev', ['exec:checkout:dev', 'jshint', 'zip']);
   grunt.registerTask('build:production', ['exec:publish', 'exec:checkout:production', 'jshint', 'zip']);
-  grunt.registerTask('deploy:development', ['build:development', 'exec:deploy:development']);
+  grunt.registerTask('deploy:dev', ['build:dev', 'exec:deploy:dev']);
   grunt.registerTask('deploy:production', ['build:production', 'exec:deploy:production']);
 };
