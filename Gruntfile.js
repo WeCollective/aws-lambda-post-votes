@@ -54,9 +54,9 @@ module.exports = grunt => {
             return '';
           }
 
-          const deployCommand = `aws lambda update-function-code --function-name ${functionName} --zip-file fileb://PostVotes.zip --region eu-west-1 --profile weco`;
+          const deployCommand = `aws lambda update-function-code --function-name ${functionName} --zip-file fileb://PostVotes.zip --region eu-west-1 --profile weco-iam`;
           return `echo Checking out ${checkout} && git checkout ${checkout} && echo Deploying... && ${deployCommand} && git checkout master`;
-        }
+        },
       },
     },
     zip: {
