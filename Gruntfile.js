@@ -1,12 +1,11 @@
 module.exports = grunt => {
-  // Load tasks
+  // Load tasks.
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-exec');
   grunt.loadNpmTasks('grunt-zip');
 
-  // Configure tasks
+  // Configure tasks.
   grunt.initConfig({
-    // javascript linting
     jshint: {
       files: [
         'Gruntfile.js',
@@ -14,7 +13,8 @@ module.exports = grunt => {
       ],
       options: {
         esversion: 6,
-        node: true, // tell jshint we are using nodejs to avoid incorrect errors
+        // Use Node to avoid incorrect errors,
+        node: true,
       },
     },
     // execute shell commands
@@ -67,9 +67,7 @@ module.exports = grunt => {
     },
   });
 
-  /* Register main tasks.
-  **    grunt build           lints the js
-  */
+  // Register tasks.
   grunt.registerTask('build:dev', ['exec:checkout:dev', 'jshint', 'zip']);
   grunt.registerTask('build:production', ['exec:publish', 'exec:checkout:production', 'jshint', 'zip']);
   grunt.registerTask('deploy:dev', ['build:dev', 'exec:deploy:dev']);
