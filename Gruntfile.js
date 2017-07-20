@@ -1,4 +1,4 @@
-module.exports = function(grunt) {
+module.exports = grunt => {
   // Load tasks
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-exec');
@@ -8,48 +8,62 @@ module.exports = function(grunt) {
   grunt.initConfig({
     // javascript linting
     jshint: {
-      files: ['Gruntfile.js', 'PostVotes.js'],
+      files: [
+        'Gruntfile.js',
+        'PostVotes.js',
+      ],
       options: {
-        node: true // tell jshint we are using nodejs to avoid incorrect errors
-      }
+        node: true, // tell jshint we are using nodejs to avoid incorrect errors
+      },
     },
     // execute shell commands
     exec: {
       publish: 'git checkout production && git merge master && git checkout master',
       checkout: {
-        cmd: function(environment) {
-          var checkout;
-          if(environment == 'development') {
+        cmd(env) {
+          let checkout;
+
+          if (env === 'development') {
             checkout = 'master';
-          } else if(environment == 'production') {
+          }
+          else if (env === 'production') {
             checkout = 'production';
-          } else {
+          }
+          else {
             return '';
           }
-          return 'echo Checking out ' + checkout + ' && git checkout ' + checkout;
-        }
+
+          return `echo Checking out ${checkout} && git checkout ${checkout}`;
+        },
       },
       deploy: {
-        cmd: function(environment) {
-          var checkout;
-          var functionName;
-          if(environment == 'development') {
+        cmd(env) {
+          let checkout;
+          let functionName;
+
+          if (env === 'development') {
             checkout = 'master';
             functionName = 'devPostVotes';
-          } else if(environment == 'production') {
+          }
+          else if (env === 'production') {
             checkout = 'production';
             functionName = 'PostVotes';
-          } else {
+          }
+          else {
             return '';
           }
-          var deployCommand = 'aws lambda update-function-code --function-name ' + functionName + ' --zip-file fileb://PostVotes.zip --region eu-west-1 --profile weco';
-          return 'echo Checking out ' + checkout + ' && git checkout ' + checkout + ' && echo Deploying... && ' + deployCommand + ' && git checkout master';
+
+          const deployCommand = `aws lambda update-function-code --function-name ${functionName} --zip-file fileb://PostVotes.zip --region eu-west-1 --profile weco`;
+          return `echo Checking out ${checkout} && git checkout ${checkout} && echo Deploying... && ${deployCommand} && git checkout master`;
         }
-      }
+      },
     },
     zip: {
-      'PostVotes.zip': ['PostVotes.js', 'node_modules/**/*']
-    }
+      'PostVotes.zip': [
+        'PostVotes.js',
+        'node_modules/**/*',
+      ],
+    },
   });
 
   /* Register main tasks.
